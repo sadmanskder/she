@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Rafia Sruti</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Plus+Jakarta+Sans:wght@200;500;800&display=swap');
+        
+        :root {
+            --pink-main: #ff0055;
+            --pink-glow: #ff2d75;
+            --black-bg: #050505;
+        }
+
+        body { 
+            background: var(--black-bg); 
+            color: white; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            overflow-x: hidden; 
+        }
+
+        .font-romantic { font-family: 'Dancing Script', cursive; }
+
+        /* Dynamic Pink Background Blur */
+        .pink-blob {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,0,85,0.15) 0%, rgba(0,0,0,0) 70%);
+            filter: blur(60px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Glassmorphism */
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.02); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 0, 85, 0.2); 
+            border-radius: 40px;
+        }
+
+        .section { min-height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; width: 100%; }
+        
+        /* High-end Swiper Sizing */
+        .swiper { width: 85vw; max-width: 400px; height: 550px; }
+        .swiper-slide { 
+            border-radius: 30px; 
+            background-position: center; 
+            background-size: cover; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(255, 0, 85, 0.25);
+        }
+
+        /* Text Stroke Effect */
+        .text-outline {
+            -webkit-text-stroke: 1px rgba(255, 0, 85, 0.5);
+            color: rgba(255, 0, 85, 0.5);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: var(--pink-main); border-radius: 10px; }
+
+        /* Particle Canvas (hearts & stars) */
+        #particle-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        /* Audio toast (shown briefly when music starts) */
+        .audio-toast { position: fixed; bottom: 20px; right: 20px; z-index: 120; display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.04); box-shadow: 0 12px 30px rgba(0,0,0,0.6); transition: opacity 300ms ease, transform 300ms ease; backdrop-filter: blur(6px); pointer-events: none; opacity: 0; transform: translateY(8px); }
+        .audio-toast.show { opacity: 1; transform: translateY(0); pointer-events: auto }
+        .audio-toast .msg { color: #fff; font-weight:700; font-size:13px }
+
+        /* Play button + debug */
+        .audio-play { position: fixed; bottom: 20px; left: 20px; z-index: 120; }
+        .audio-debug { margin-top:8px; font-size:12px; color: rgba(255,255,255,0.7); max-width:260px; }
+
+        /* Start overlay/button */
+        #start-overlay { background: rgba(0,0,0,0.28); }
+        #start-btn { padding: 14px 22px; font-size:18px; border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+
+        .control-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); color: #fff; padding: 8px 12px; border-radius: 999px; cursor: pointer; backdrop-filter: blur(6px); font-weight:700; font-size:12px }
+
+        /* Wish Modal */
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal { background: linear-gradient(180deg, rgba(10,10,10,0.95), rgba(6,6,6,0.95)); border-radius: 20px; padding: 28px; width: min(720px, 92vw); border: 1px solid rgba(255,0,85,0.08); box-shadow: 0 30px 80px rgba(0,0,0,0.6); }
+        .modal textarea { width: 100%; min-height: 120px; background: transparent; border: 1px dashed rgba(255,255,255,0.06); padding: 16px; color: #fff; border-radius: 12px; resize: vertical }
+        .message-bubble { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,0,85,0.06); padding: 14px 18px; border-radius: 16px; color: #fff; display:inline-block; max-width: 80%; }
+    </style>
+</head>
+<body>
+
+    <div id="loader" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center">
+        <div class="relative">
+            <div class="w-24 h-24 border-2 border-pink-500/20 rounded-full animate-ping absolute inset-0"></div>
+            <h1 class="text-pink-500 font-romantic text-5xl relative z-10">Rafia</h1>
+        </div>
+        <div class="mt-12 w-48 h-[1px] bg-zinc-800 relative">
+            <div id="loader-bar" class="absolute inset-y-0 left-0 bg-pink-500 w-0"></div>
+        </div>
+    </div>
+
+    <!-- Start overlay: user can click to start the loading animation & audio -->
+    <div id="start-overlay" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:150;pointer-events:auto;">
+        <button id="start-btn" class="control-btn" aria-label="Start experience">Click Me</button>
+    </div>
+
+    <section id="hero" class="section overflow-hidden">
+        <div class="pink-blob top-[-10%] left-[-10%]"></div>
+        <div class="pink-blob bottom-[-10%] right-[-10%]"></div>
+        
+        <div class="absolute inset-0 z-0">
+            <img src="images/clg.jpg" class="w-full h-full object-cover opacity-20 scale-110 hero-img" alt="Background">
+        </div>
+
+        <div class="relative z-10 text-center px-4">
+            <h2 class="text-pink-500 tracking-[0.4em] uppercase text-xs md:text-sm mb-6 hero-reveal">January 1st • 2026</h2>
+            <h1 class="text-7xl md:text-[10rem] font-extrabold leading-none mb-4 hero-reveal">
+                <span class="block">HAPPY</span>
+                <span class="text-outline">BIRTHDAY</span>
+            </h1>
+            <div class="h-[2px] w-24 bg-pink-500 mx-auto my-8 hero-reveal"></div>
+            <p class="text-lg md:text-2xl font-light hero-reveal tracking-wide text-zinc-400">MY QUEEN</p>
+            
+            <button onclick="scrollToNext()" class="mt-12 group relative px-10 py-4 overflow-hidden rounded-full hero-reveal">
+                <div class="absolute inset-0 bg-pink-500 transition-transform group-hover:scale-110"></div>
+                <span class="relative text-white font-bold tracking-widest text-sm">TARPOR... →</span>
+            </button>
+        </div>
+    </section>
+
+    <section id="gallery-sec" class="section bg-[#080808] flex-col py-20">
+        <div class="text-center mb-16 px-4">
+            <h2 class="text-4xl md:text-6xl font-romantic text-pink-500 gallery-title">A Symphony of Memories</h2>
+            <p class="text-zinc-500 mt-4 uppercase tracking-[0.2em] text-xs">Your beauty, captured in time</p>
+        </div>
+        
+        <div class="swiper mySwiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide" style="background-image: url('images/r1.jpg')"></div>
+                <div class="swiper-slide" style="background-image: url('images/r2.jpg')"></div>
+                <div class="swiper-slide" style="background-image: url('images/r3.jpg')"></div>
+                <div class="swiper-slide" style="background-image: url('images/r4.jpg')"></div>
+                <div class="swiper-slide" style="background-image: url('images/r5.jpg')"></div>
+                <div class="swiper-slide" style="background-image: url('images/r6.jpg');"></div>
+
+            </div>
+        </div>
+        
+        <div class="mt-12 flex items-center gap-4 text-zinc-600">
+            <span>Swipe</span>
+            <div class="w-12 h-[1px] bg-pink-500/30"></div>
+            <span>Discover</span>
+        </div>
+    </section>
+
+    <section class="section px-6">
+        <div class="pink-blob top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2"></div>
+        
+        <div class="glass-card max-w-4xl w-full p-8 md:p-20 relative z-10 border-pink-500/10" style="text-align: justify;">
+            <span class="text-pink-500 text-5xl mb-8 block">“</span>
+            <div class="space-y-8 text-xl md:text-3xl leading-snug message-container">
+                <p class="reveal-text">To Sruti, 1st January used to mean a new year. Now, it means the day the world was gifted with <span class="text-pink-500 font-bold">you</span>.</p>
+                <p class="reveal-text">My Love, </br>
+                    As the clock struck midnight on January 1st, the whole world celebrated a new year. But I celebrated the most beautiful soul I've ever had the privilege of loving.
+                </p> 
+                <p class="reveal-text text-zinc-400">Your smile is my favorite scene, and your voice is my favorite song. I hope this year brings you as much happiness as you've brought into my life since the day we met.</p>
+                </p>
+                <p class="reveal-text text-zinc-400">This first birthday together is a milestone I'll cherish forever. Every laugh we've shared and every moment we've spent together has made my life vibrant. You've turned my ordinary days into something extraordinary just by being in them.</p>
+                <p class="reveal-text">You are my 12:00 AM wish, my 3:00 PM thought, and my favorite part of every single day.</p>
+                <p class="reveal-text font-romantic text-4xl text-pink-500 mt-12">I love you more than words can ever capture., always.</p>
+            </div>
+            
+            <div class="mt-16 flex flex-col md:flex-row gap-6 items-center reveal-text">
+                <a id="send-reply" href="https://wa.me/YOUR_PHONE_NUMBER?text=Happy%20New%20Year%20and%20Thank%20You%20Love!" 
+                   class="w-full md:w-auto text-center px-10 py-5 border border-pink-500 text-pink-500 rounded-2xl hover:bg-pink-500 hover:text-white transition-all duration-500 font-bold tracking-widest text-xs">
+                    SEND A REPLY ❤️
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-20 text-center relative overflow-hidden">
+        <div class="opacity-10 absolute inset-0 text-[10rem] font-bold select-none pointer-events-none">01-01-2026</div>
+        <p class="text-zinc-500 tracking-[0.5em] text-[10px] uppercase">Crafted with Love for Rafia Sruti</p>
+    </footer>
+
+    <!-- Floating controls removed per request - ambient wishes will start on first user interaction and the wish modal is opened via "SEND A REPLY" -->
+
+    <!-- Audio toast (appears briefly after music starts) -->
+    <div id="audio-toast" class="audio-toast" role="status" aria-live="polite" style="display:none">
+        <div class="msg">Music playing</div>
+        <div><button id="audio-mute-btn" class="control-btn" aria-pressed="false">Mute</button></div>
+    </div>
+
+    <!-- Play control (persistent) -->
+    <div class="audio-play">
+        <button id="audio-play-btn" class="control-btn">Play Music</button>
+        <div id="audio-debug" class="audio-debug" style="display:none"></div>
+    </div>
+
+    <!-- Particle Canvas for hearts / stars -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Wish Modal -->
+    <div id="wish-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="wish-title">
+        <div class="modal">
+            <h3 id="wish-title" class="text-2xl font-bold text-pink-500">Send a Wish</h3>
+            <p class="text-zinc-400 text-sm mt-2">Write something sweet — it will animate into the page when sent ❤️</p>
+            <textarea id="wish-text" placeholder="Type your wish here..." aria-label="Wish message"></textarea>
+            <div class="mt-4 flex gap-3 justify-end">
+                <button id="wish-send" class="control-btn">Send ❤️</button>
+                <button id="wish-close" class="control-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // 1. Loader Animation (refactored so it can be replayed by the start button)
+        function startExperience(){
+            const loader = document.getElementById('loader');
+            const loaderBar = document.getElementById('loader-bar');
+            if(!loader || !loaderBar) return;
+            // ensure it's visible and reset bar
+            loader.style.display = 'flex'; loader.style.opacity = 1; loader.style.transform = 'scale(1)';
+            loaderBar.style.width = '0%';
+
+            const tl = gsap.timeline();
+            tl.to("#loader-bar", { width: "100%", duration: 1.5, ease: "power2.inOut" })
+              .to("#loader", { opacity: 0, scale: 1.1, display: "none", duration: 0.8 })
+              .from(".hero-img", { scale: 1.4, duration: 3, ease: "power2.out" }, "-=0.5")
+              .from(".hero-reveal", { 
+                  y: 100, 
+                  opacity: 0, 
+                  stagger: 0.15, 
+                  duration: 1.2, 
+                  ease: "expo.out" 
+              }, "-=2")
+              .add(() => {
+                  confetti({ particleCount: 150, spread: 70, origin: { y: 0.7 }, colors: ['#ff0055', '#000000', '#ffffff'] });
+              }, "-=1");
+
+            // Try to kick off audio element playback (muted autoplay may be allowed)
+            try{ const a = document.getElementById('bgm-audio'); if(a){ a.play().catch(()=>{}); } }catch(e){}
+        }
+
+        // Start on real load automatically (will run the loader once when resources are ready)
+        window.addEventListener('load', () => { startExperience(); const overlay = document.getElementById('start-overlay'); if(overlay) overlay.style.display = 'none'; });
+
+        // Wire the new user-facing Start button: plays audio and replays the loader animation
+        (function(){
+            const startBtn = document.getElementById('start-btn');
+            const overlay = document.getElementById('start-overlay');
+            if(!startBtn) return;
+            startBtn.addEventListener('click', (ev)=>{
+                ev.preventDefault();
+                // hide the overlay, start ambient audio (gesture) and run loader animation
+                if(overlay) overlay.style.display = 'none';
+                try{ if(window.startAmbient) window.startAmbient(); }catch(e){ console.warn(e); }
+                startExperience();
+            });
+            // keyboard activation
+            startBtn.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); startBtn.click(); } });
+        })();
+
+        // 2. Swiper Initialization (Cards Effect)
+        const swiper = new Swiper(".mySwiper", {
+            effect: "cards",
+            grabCursor: true,
+            perSlideRotate: 2,
+            perSlideOffset: 8,
+            loop: true,
+            autoplay: { delay: 3000, disableOnInteraction: false },
+        });
+
+        // 3. Scroll Reveal for Text
+        gsap.utils.toArray(".reveal-text").forEach((text) => {
+            gsap.from(text, {
+                scrollTrigger: {
+                    trigger: text,
+                    start: "top 85%",
+                },
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                ease: "power3.out"
+            });
+        });
+
+        // 4. Parallax Backgrounds
+        gsap.to(".hero-img", {
+            scrollTrigger: {
+                trigger: "#hero",
+                start: "top top",
+                scrub: true
+            },
+            y: 200
+        });
+
+        function scrollToNext() {
+            document.getElementById('gallery-sec').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // --- Enhanced Interactive Features (non-destructive additions) ---
+        // Features added:
+        //  - Canvas particle system (hearts + stars) that responds to clicks and runs subtly
+        //  - Floating controls: ambient audio toggle (WebAudio) and "Write a Wish" modal
+        //  - Wish modal: compose and animate messages into `.message-container` with confetti
+        //  - Keyboard shortcuts: 'C' triggers confetti, Space triggers subtle confetti + hearts
+        // These additions are intentionally isolated with unique IDs/classes and won't modify
+        // existing layout or third-party library behavior (GSAP / Swiper / confetti still work).
+
+        // Particle engine: lightweight hearts + stars
+        (function(){
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            let w = canvas.width = innerWidth;
+            let h = canvas.height = innerHeight;
+
+            const particles = [];
+
+            function rand(min, max){ return Math.random() * (max - min) + min }
+
+            function Heart(x,y,dx,dy,size,color){
+                this.x = x; this.y = y; this.dx = dx; this.dy = dy; this.size = size; this.color = color; this.life = 1;
+            }
+            Heart.prototype.update = function(dt){
+                this.x += this.dx * dt; this.y += this.dy * dt; this.dy += 0.06 * dt; this.life -= 0.008 * dt;
+            }
+            Heart.prototype.draw = function(){
+                ctx.save(); ctx.translate(this.x, this.y); ctx.scale(this.size, this.size);
+                ctx.fillStyle = this.color; ctx.beginPath();
+                ctx.moveTo(0, -8); ctx.bezierCurveTo(-12,-24,-38,-8,-6,10); ctx.bezierCurveTo(0,18,6,14,8,12); ctx.bezierCurveTo(38,-8,12,-24,0,-8);
+                ctx.fill(); ctx.restore();
+            }
+
+            function spawnHeart(x,y){
+                particles.push(new Heart(x, y, rand(-0.6,0.6), rand(-1.2,-0.4), rand(0.6,1.1), `rgba(255,45,117,${rand(0.8,1)})`));
+            }
+
+            function spawnStar(){
+                particles.push({ x: rand(0,w), y: -10, dx: rand(-0.2,0.2), dy: rand(0.1,0.8), size: rand(0.6,1.6), draw(){ ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(this.x,this.y,this.size,this.size); } , update(dt){ this.x += this.dx*dt; this.y += this.dy*dt; } });
+            }
+
+            let last = performance.now();
+            function loop(t){
+                const dt = Math.min(60, t - last) / 16; last = t;
+                ctx.clearRect(0,0,w,h);
+                if(Math.random() < 0.02) spawnStar();
+                for(let i = particles.length -1; i>=0; i--){
+                    const p = particles[i];
+                    p.update(dt);
+                    if(p.life !== undefined && p.life <= 0) particles.splice(i,1);
+                    else if(p.y > h + 50) particles.splice(i,1);
+                    else p.draw();
+                }
+                requestAnimationFrame(loop);
+            }
+            requestAnimationFrame(loop);
+
+            // Responsive canvas
+            addEventListener('resize',()=>{ w = canvas.width = innerWidth; h = canvas.height = innerHeight; });
+
+            // Click to send hearts from cursor
+            addEventListener('click', (e)=>{
+                for(let i=0;i<12;i++) spawnHeart(e.clientX + rand(-8,8), e.clientY + rand(-8,8));
+            });
+
+            // Gentle auto emission near hero for ambience
+            setInterval(()=>{ const hero = document.querySelector('#hero'); if(hero){ const rect = hero.getBoundingClientRect(); spawnHeart(rect.left + rect.width * Math.random(), rect.top + rect.height * Math.random()); } }, 600);
+        })();
+
+        // Ambient audio (WebAudio) - will start once on the user's first interaction or when using the tooltip start button
+        (function(){
+                let started = false; let ctx, master, nodes;
+                const toast = document.getElementById('audio-toast'); let toastTimer = null;
+                function getAudioEl(){ return document.getElementById('bgm-audio'); }
+                function showToast(msg, duration=3200){ if(!toast) return; toast.querySelector('.msg').textContent = msg; toast.style.display='flex'; setTimeout(()=>toast.classList.add('show'), 10); if(toastTimer) clearTimeout(toastTimer); toastTimer = setTimeout(()=>{ toast.classList.remove('show'); setTimeout(()=>toast.style.display='none',300); }, duration); }
+                function startAmbient(){
+                    if(started) return; started = true;
+                    window.startAmbient = startAmbient; // expose for retries
+                    // WebAudio oscillators for a subtle pad
+                    ctx = new (window.AudioContext || window.webkitAudioContext)(); master = ctx.createGain(); master.gain.value = 0.02; master.connect(ctx.destination);
+                    const o1 = ctx.createOscillator(); const o2 = ctx.createOscillator(); const lfo = ctx.createOscillator();
+                    const lfoGain = ctx.createGain();
+                    o1.type = 'sine'; o1.frequency.value = 220; o2.type = 'sine'; o2.frequency.value = 221.8; lfo.frequency.value = 0.08; lfoGain.gain.value = 18;
+                    lfo.connect(lfoGain); lfoGain.connect(o1.frequency); lfoGain.connect(o2.frequency);
+                    const g1 = ctx.createGain(); g1.gain.value = 0.15; o1.connect(g1); o2.connect(g1); g1.connect(master);
+                    o1.start(); o2.start(); lfo.start(); nodes = [o1,o2,lfo,g1];
+
+                    // Also try to play the <audio> element if present (allowed because this is a user gesture)
+                    const audioEl = getAudioEl();
+                    if(audioEl){
+                        // If the audio already autoplayed muted, unmute gently and fade in
+                        try {
+                            // Unmute and fade from 0 to 0.65 over ~1.2s to comply with UX
+                            audioEl.muted = false;
+                            fadeInAudio(audioEl, 0.65, 1200);
+                            // Ensure it's playing (muted autoplay covers most browsers, but re-try)
+                            const p = audioEl.play();
+                            if(p && p.catch) p.catch((err)=>{ showToast('Playback blocked — tap to play', 6000); console.warn('play() failed', err); const dbg = document.getElementById('audio-debug'); if(dbg){ dbg.style.display='block'; dbg.textContent = 'play() error: ' + (err && err.message ? err.message : err); } });
+                        } catch (err) {
+                            console.warn('Error during unmute/fade', err);
+                        }
+                        audioEl.addEventListener('error', ()=>{ showToast('Audio load error', 6000); const dbg = document.getElementById('audio-debug'); if(dbg){ dbg.style.display='block'; dbg.textContent = 'Audio error'; } });
+                        audioEl.addEventListener('playing', ()=>{ showToast('Music playing'); const dbg = document.getElementById('audio-debug'); if(dbg){ dbg.style.display='none'; } try{ document.getElementById('audio-play-btn').style.display='none'; }catch(e){} });
+                        audioEl.addEventListener('canplay', ()=>{ const dbg = document.getElementById('audio-debug'); if(dbg){ dbg.style.display='none'; } });
+                    }
+                    // show toast to confirm music is starting (may be delayed if blocked)
+                    showToast('Starting wishes...');
+                }
+
+            function onFirstGesture(){ startAmbient(); window.removeEventListener('pointerdown', onFirstGesture, {capture:true}); }
+            window.addEventListener('pointerdown', onFirstGesture, {capture:true});
+
+            // Helper: fade audio volume up
+            function fadeInAudio(el, target=0.65, duration=1200){
+                try{
+                    el.volume = 0;
+                    const steps = 24; const stepTime = Math.max(16, duration / steps);
+                    let i = 0;
+                    const iv = setInterval(()=>{
+                        i++;
+                        const v = Math.min(1, (i/steps) * target);
+                        el.volume = v;
+                        if(i >= steps){ clearInterval(iv); el.volume = target; }
+                    }, stepTime);
+                }catch(e){}
+            }
+
+            // Mute/unmute control on the toast
+            const muteBtn = document.getElementById('audio-mute-btn'); if(muteBtn){ muteBtn.addEventListener('click', ()=>{ const audioEl = getAudioEl(); if(!audioEl) return; if(audioEl.paused){ audioEl.play().catch(()=>{ showToast('Playback blocked — tap to play', 4000); }); muteBtn.textContent = 'Mute'; muteBtn.setAttribute('aria-pressed','false'); showToast('Music playing'); } else { audioEl.pause(); muteBtn.textContent = 'Unmute'; muteBtn.setAttribute('aria-pressed','true'); showToast('Music paused'); } }); }
+
+            // Play button (visible) - helpful when auto-start was blocked
+            const playBtn = document.getElementById('audio-play-btn'); if(playBtn){ playBtn.addEventListener('click', ()=>{ try{ startAmbient(); const audioEl = getAudioEl(); if(!audioEl){ showToast('No audio element found',4000); return; } audioEl.volume = 0.65; audioEl.muted = false; audioEl.play().then(()=>{ showToast('Music playing'); playBtn.style.display='none'; }).catch((err)=>{ showToast('Playback blocked — tap the toast to retry',6000); const dbg = document.getElementById('audio-debug'); if(dbg){ dbg.style.display='block'; dbg.textContent = 'play() error: ' + (err && err.message ? err.message : err); } console.warn(err); }); }catch(e){ console.error(e); showToast('Error starting audio',4000);} }); }
+
+            // Allow clicking the toast to retry play if playback was blocked
+            if(toast){ toast.addEventListener('click', ()=>{ const audioEl = getAudioEl(); if(!audioEl) return; audioEl.play().catch(()=>{ showToast('Playback blocked — try interacting with the page', 4200); }); }); }
+        })();
+
+        // Wish Modal logic + on-send animation (adds bubble into .message-container)
+        (function(){
+            const modal = document.getElementById('wish-modal'); const close = document.getElementById('wish-close'); const send = document.getElementById('wish-send'); const text = document.getElementById('wish-text');
+            const messageContainer = document.querySelector('.message-container');
+            // sendAnchor opens the modal (SEND A REPLY)
+            const sendAnchor = document.getElementById('send-reply');
+            let lastFocused = null;
+            if(sendAnchor){ sendAnchor.addEventListener('click', (ev)=>{
+                // preserve modifier-click behavior
+                if(ev.ctrlKey || ev.shiftKey || ev.metaKey || ev.button !== 0) return;
+                ev.preventDefault(); lastFocused = document.activeElement; modal.style.display='flex'; text.focus();
+            }); }
+
+            close.addEventListener('click', ()=>{ modal.style.display='none'; if(lastFocused) lastFocused.focus(); });
+
+            send.addEventListener('click', ()=>{
+                const v = text.value.trim(); if(!v) return; modal.style.display='none'; text.value='';
+                const bubble = document.createElement('div'); bubble.className = 'message-bubble reveal-text'; bubble.innerHTML = v.replace(/\n/g,'<br/>'); messageContainer.appendChild(bubble);
+                // animate into view
+                gsap.from(bubble, { y: 30, opacity:0, duration: 0.8, ease:'expo.out' });
+                // celebration
+                confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
+                // spawn hearts around the area
+                const rect = bubble.getBoundingClientRect(); for(let i=0;i<18;i++){ const ev = new MouseEvent('click', {clientX: rect.left + rect.width*Math.random(), clientY: rect.top + rect.height*Math.random()}); document.dispatchEvent(ev); }
+            });
+
+            // close on backdrop click
+            modal.addEventListener('click', (e)=>{ if(e.target === modal) modal.style.display='none'; });
+        })();
+
+        // Keyboard: press C to trigger confetti, Space triggers subtle confetti+hearts
+        (function(){
+            addEventListener('keydown', (e)=>{
+                if(e.key.toLowerCase() === 'c'){ confetti({ particleCount: 200, spread: 90 }); }
+                if(e.code === 'Space'){ confetti({ particleCount: 60, spread: 50, origin:{ y:0.6 } }); for(let i=0;i<8;i++) document.dispatchEvent(new MouseEvent('click',{clientX: innerWidth*0.5 + Math.random()*200-100, clientY: innerHeight*0.4 + Math.random()*140-70})); }
+            });
+        })();
+    </script>
+    <audio id="bgm-audio" src="bgm.mp3" loop autoplay muted playsinline preload="auto"></audio>
+</body>
+</html>
